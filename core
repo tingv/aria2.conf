@@ -40,6 +40,8 @@ CHECK_PARAMETER() {
 CHECK_FILE_NUM() {
     [[ ${FILE_NUM} -eq 0 ]] && {
         echo && echo -e "$(DATE_TIME) ${WARRING} Number of files is zero, maybe a Magnet Link."
+        REMOVE_TASK
+        GET_REMOVE_TASK_INFO
         exit 0
     }
 }
@@ -226,4 +228,32 @@ CLEAN_UP() {
     DELETE_DOT_TORRENT
     DELETE_EXCLUDE_FILE
     DELETE_EMPTY_DIR
+}
+
+RPC_REMOVE_TASK() {
+    if [[ "${RPC_SECRET}" ]]; then
+        RPC_PAYLOAD='{"jsonrpc":"2.0","method":"aria2.removeDownloadResult","id":"TingV","params":["token:'${RPC_SECRET}'","'${TASK_GID}'"]}'
+    else
+        RPC_PAYLOAD='{"jsonrpc":"2.0","method":"aria2.removeDownloadResult","id":"TingV","params":["'${TASK_GID}'"]}'
+    fi
+    curl "${RPC_ADDRESS}" -fsSd "${RPC_PAYLOAD}" || curl "https://${RPC_ADDRESS}" -kfsSd "${RPC_PAYLOAD}"
+}
+
+REMOVE_TASK() {
+    READ_ARIA2_CONF
+    RPC_RESULT="$(RPC_REMOVE_TASK)"
+}
+
+GET_REMOVE_TASK_INFO() {
+    [[ -z ${RPC_RESULT} ]] && {
+        echo -e "$(DATE_TIME) ${ERROR} Aria2 RPC interface error!"
+        exit 1
+    }
+    REMOVE_TASK_STATUS=$(echo "${RPC_RESULT}" | jq -r '.result')
+    if [[ "${REMOVE_TASK_STATUS}" = "OK" ]]; then
+        echo -e "$(DATE_TIME) ${INFO} Delete the task successfully."
+    else
+        echo -e "$(DATE_TIME) ${ERROR} Failed to delete the task."
+        exit 1
+    fi
 }

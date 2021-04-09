@@ -144,6 +144,7 @@ UPLOAD_FILE() {
             DELETE_EMPTY_DIR
             REMOVE_TASK
             GET_REMOVE_TASK_INFO
+            TELEGRAM_NOTIFICATION
             break
         else
             RETRY=$((${RETRY} + 1))
@@ -157,13 +158,39 @@ UPLOAD_FILE() {
     done
 }
 
+
+TELEGRAM_NOTIFICATION() {
+    if [[ "${TG_BOT_TOKEN}" && "${TG_USER_ID}" ]]; then
+        NOTIFICATION_RESULT=`curl -X POST -s \
+            -H 'Content-Type: application/json' \
+            -d "{
+                    \"chat_id\": \"${TG_USER_ID}\",
+                    \"parse_mode\": \"HTML\",
+                    \"text\": \"Task File Name: <code>${TASK_FILE_NAME}</code>\n\nRemote Path: <code>${REMOTE_PATH}</code>\n\nCompletion Date: $(DATE_TIME)\",
+                    \"disable_web_page_preview\": true,
+                    \"disable_notification\": true
+                }" \
+            "https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage"`
+            NOTIFICATION_STATE=$(echo "${NOTIFICATION_RESULT}" | jq -r ".ok")
+            if [[ "${NOTIFICATION_STATE}" = "true" ]]; then
+                echo -e "$(DATE_TIME) ${INFO} Telegram message sent successfully."
+            elif [[ "${NOTIFICATION_STATE}" = "false" ]]; then
+                NOTIFICATION_ERROR_MSG=$(echo "${NOTIFICATION_RESULT}" | jq -r ".description")
+                NOTIFICATION_ERROR_CODE=$(echo "${NOTIFICATION_RESULT}" | jq -r ".error_code")
+                echo -e "$(DATE_TIME) ${ERROR} Telegram message sending failed. ${NOTIFICATION_ERROR_CODE}# ${NOTIFICATION_ERROR_MSG}"
+            else
+               echo -e "$(DATE_TIME) ${ERROR} Telegram message sending failed. Please check your network."
+            fi
+    fi
+}
+
 CHECK_CORE_FILE "$@"
 CHECK_SPECIAL_MODE
 CHECK_RCLONE_PID
 GET_STOPPED_LIST
 GET_UPLOAD_TASK_INFO
 CHECK_SCRIPT_CONF
-CHECK_RCLONE "$@"
+# CHECK_RCLONE "$@"
 GET_TASK_INFO
 GET_DOWNLOAD_DIR
 CONVERSION_PATH

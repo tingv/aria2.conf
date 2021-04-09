@@ -166,7 +166,7 @@ TELEGRAM_NOTIFICATION() {
             -d "{
                     \"chat_id\": \"${TG_USER_ID}\",
                     \"parse_mode\": \"HTML\",
-                    \"text\": \"Task File Name: <code>${TASK_FILE_NAME}</code>\n\nRemote Path: <code>${REMOTE_PATH}</code>\n\nCompletion Date: $(DATE_TIME)\",
+                    \"text\": \"<b>Task File Name</b>: <code>${TASK_FILE_NAME}</code>\n\n<b>Remote Path</b>: <code>${REMOTE_PATH}</code>\n\n<b>Completion Date</b>: $(DATE_TIME)\",
                     \"disable_web_page_preview\": true,
                     \"disable_notification\": true
                 }" \

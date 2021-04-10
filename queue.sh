@@ -38,9 +38,9 @@ CHECK_RCLONE_PID() {
 
 RPC_STOPPED_LIST() {
     if [[ "${RPC_SECRET}" ]]; then
-        RPC_PAYLOAD='{"jsonrpc":"2.0","method":"aria2.tellStopped","id":"TingV","params":["token:'${RPC_SECRET}'",-1,1000,["gid","status","files","errorCode","errorMessage"]]}'
+        RPC_PAYLOAD='{"jsonrpc":"2.0","method":"aria2.tellStopped","id":"TingV","params":["token:'${RPC_SECRET}'",-1,1000,["gid","status","files"]]}'
     else
-        RPC_PAYLOAD='{"jsonrpc":"2.0","method":"aria2.tellStopped","id":"TingV","params":[-1,1000,["gid","status","files","errorCode","errorMessage"]]}'
+        RPC_PAYLOAD='{"jsonrpc":"2.0","method":"aria2.tellStopped","id":"TingV","params":[-1,1000,["gid","status","files"]]}'
     fi
     curl "${RPC_ADDRESS}" -fsSd "${RPC_PAYLOAD}" || curl "https://${RPC_ADDRESS}" -kfsSd "${RPC_PAYLOAD}"
 }
@@ -136,6 +136,7 @@ UPLOAD_FILE() {
             echo -e "$(DATE_TIME) ${ERROR} Upload failed! Retry ${RETRY}/${RETRY_NUM} ..."
             echo
         )
+        GENERATE_MEDIAINFO_FILE
         rclone move -v "${LOCAL_PATH}" "${REMOTE_PATH}"
         RCLONE_EXIT_CODE=$?
         if [ ${RCLONE_EXIT_CODE} -eq 0 ]; then
@@ -181,6 +182,25 @@ TELEGRAM_NOTIFICATION() {
             else
                echo -e "$(DATE_TIME) ${ERROR} Telegram message sending failed. Please check your network."
             fi
+    fi
+}
+
+GENERATE_MEDIAINFO_FILE() {
+    if [[ "${DELETE_EMPTY_DIR}" = "true" ]]; then
+        if [[ ${FILE_NUM} -eq 1 ]]; then
+            echo -e "$(DATE_TIME) ${WARRING} Single file tasks do not generate mediainfo.txt."
+            return 1
+        fi
+        VIDEO_FILE=$(ls "${LOCAL_PATH}" | grep -i 'wmv\|.*.avi\|.*.dat\|.*.asf\|.*.mpeg\|.*.mpg\|.*.rm\|.*.rmvb\|.*.ram\|.*.flv\|.*.mp4\|.*.3gp\|.*.mov\|.*.divx\|.*.dv\|.*.vob\|.*.mkv\|.*.qt\|.*.cpk\|.*.fli\|.*.flc\|.*.f4v\|.*.m4v\|.*.mod\|.*.m2t\|.*.swf\|.*.webm\|.*.mts\|.*.m2ts' | sed -n '1p') # 获取视频文件并取第一个
+        if [[ -z ${VIDEO_FILE} ]]; then
+            echo -e "$(DATE_TIME) ${WARRING} No video file found, can't generate mediainfo.txt!"
+            return 1
+        fi
+        echo -e "$(DATE_TIME) ${INFO} Generate mediainfo.txt file ..."
+        VIDEO_FILE_PATH="${LOCAL_PATH}/${VIDEO_FILE}"
+        MEDIAINFO_INFO=$(mediainfo "${VIDEO_FILE_PATH}")
+        MEDIAINFO_INFO=${MEDIAINFO_INFO/"${LOCAL_PATH}/"/""}
+        echo "${MEDIAINFO_INFO}" > "${LOCAL_PATH}/mediainfo.txt"
     fi
 }
 

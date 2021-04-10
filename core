@@ -70,6 +70,9 @@ LOAD_SCRIPT_CONF() {
     MIN_SIZE="$(grep ^min-size "${SCRIPT_CONF}" | cut -d= -f2-)"
     INCLUDE_FILE="$(grep ^include-file "${SCRIPT_CONF}" | cut -d= -f2-)"
     EXCLUDE_FILE="$(grep ^exclude-file "${SCRIPT_CONF}" | cut -d= -f2-)"
+    TG_BOT_TOKEN="$(grep ^tg-bot-token "${SCRIPT_CONF}" | cut -d= -f2-)"
+    TG_USER_ID="$(grep ^tg-user-id "${SCRIPT_CONF}" | cut -d= -f2-)"
+    MEDIAINFO_FILE="$(grep ^mediainfo-file "${SCRIPT_CONF}" | cut -d= -f2-)"
 }
 
 READ_ARIA2_CONF() {

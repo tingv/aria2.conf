@@ -7,7 +7,7 @@
 #
 # https://github.com/tingv/aria2.conf
 # File name：queue.sh
-# Description: Add the task to the queue and upload it using Rclone.
+# Description: Use Rclone to queue files for upload.
 # Version: 1.0
 #
 

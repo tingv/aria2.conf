@@ -106,6 +106,14 @@ GET_TASK_INFO() {
     RPC_RESULT="$(RPC_TASK_INFO)"
 }
 
+GET_BITTORRENT_MODE() {
+    [[ -z ${RPC_RESULT} ]] && {
+        echo -e "$(DATE_TIME) ${ERROR} Aria2 RPC interface error!"
+        exit 1
+    }
+    BITTORRENT_MODE=$(echo "${RPC_RESULT}" | jq -r '.result.bittorrent.mode')    # single | multi | null
+}
+
 GET_DOWNLOAD_DIR() {
     [[ -z ${RPC_RESULT} ]] && {
         echo -e "$(DATE_TIME) ${ERROR} Aria2 RPC interface error!"

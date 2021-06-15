@@ -186,7 +186,7 @@ TELEGRAM_NOTIFICATION() {
 }
 
 GENERATE_MEDIAINFO_FILE() {
-    if [[ "${DELETE_EMPTY_DIR}" = "true" ]]; then
+    if [[ "${MEDIAINFO_FILE}" = "true" ]]; then
         if [[ ${FILE_NUM} -eq 1 ]]; then
             echo -e "$(DATE_TIME) ${WARRING} Single file tasks do not generate mediainfo.txt."
             return 1

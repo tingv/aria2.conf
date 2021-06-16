@@ -268,3 +268,27 @@ GET_REMOVE_TASK_INFO() {
         exit 1
     fi
 }
+
+RPC_GLOBAL_STAT() {
+    if [[ "${RPC_SECRET}" ]]; then
+        RPC_PAYLOAD='{"jsonrpc":"2.0","method":"aria2.getGlobalStat","id":"TingV","params":["token:'${RPC_SECRET}'","'${TASK_GID}'"]}'
+    else
+        RPC_PAYLOAD='{"jsonrpc":"2.0","method":"aria2.getGlobalStat","id":"TingV","params":["'${TASK_GID}'"]}'
+    fi
+    curl "${RPC_ADDRESS}" -fsSd "${RPC_PAYLOAD}" || curl "https://${RPC_ADDRESS}" -kfsSd "${RPC_PAYLOAD}"
+}
+
+GLOBAL_STAT() {
+    READ_ARIA2_CONF
+    RPC_RESULT="$(RPC_GLOBAL_STAT)"
+}
+
+GET_GLOBAL_STAT_INFO() {
+    [[ -z ${RPC_RESULT} ]] && {
+        echo -e "$(DATE_TIME) ${ERROR} Aria2 RPC interface error!"
+        exit 1
+    }
+    numActive=$(echo "${RPC_RESULT}" | jq -r '.result.numActive')
+    numWaiting=$(echo "${RPC_RESULT}" | jq -r '.result.numWaiting')
+    numStopped=$(echo "${RPC_RESULT}" | jq -r '.result.numStopped')
+}

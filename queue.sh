@@ -36,6 +36,17 @@ CHECK_RCLONE_PID() {
     }
 }
 
+CLEAN_UP_ARIA2_DOWNLOAD_DIR() {
+    if [[ "${numActive}" -eq 0 && "${numWaiting}" -eq 0 && "${numStopped}" -eq 0 ]]; then
+        if [ "$(ls -A ${ARIA2_DOWNLOAD_DIR})" ]; then
+            echo -e "$(DATE_TIME) ${INFO} Clean up Aria2 download directory ..."
+            rm -vrf ${ARIA2_DOWNLOAD_DIR}/*
+        else
+            echo -e "$(DATE_TIME) ${INFO} Aria2 download directory is empty and does not need to be cleaned up."
+        fi
+    fi
+}
+
 RPC_STOPPED_LIST() {
     if [[ "${RPC_SECRET}" ]]; then
         RPC_PAYLOAD='{"jsonrpc":"2.0","method":"aria2.tellStopped","id":"TingV","params":["token:'${RPC_SECRET}'",-1,1000,["gid","status","files"]]}'
@@ -207,6 +218,9 @@ GENERATE_MEDIAINFO_FILE() {
 CHECK_CORE_FILE "$@"
 CHECK_SPECIAL_MODE
 CHECK_RCLONE_PID
+GLOBAL_STAT
+GET_GLOBAL_STAT_INFO
+CLEAN_UP_ARIA2_DOWNLOAD_DIR
 GET_STOPPED_LIST
 GET_UPLOAD_TASK_INFO
 CHECK_SCRIPT_CONF

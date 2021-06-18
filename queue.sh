@@ -142,13 +142,38 @@ UPLOAD_FILE() {
     RETRY=0
     RETRY_NUM=3
     GENERATE_MEDIAINFO_FILE
+    RCLONE_MIN_SIZE_OPTION=""
+    RCLONE_MAX_SIZE_OPTION=""
+    RCLONE_FILTER_FILE_OPTION=""
+    RCLONE_IGNORE_CASE_OPTION=""
+
+    if [[ -n ${RCLONE_MIN_SIZE} ]]; then
+        RCLONE_MIN_SIZE_OPTION=${RCLONE_MIN_SIZE}
+    fi
+
+    if [[ -n ${RCLONE_MAX_SIZE} ]]; then
+        RCLONE_MAX_SIZE_OPTION=${RCLONE_MAX_SIZE}
+    fi
+
+    if [[ "${RCLONE_FILTER_FILE}" = "true" ]]; then
+        RCLONE_FILTER_FILE_OPTION="--filter-from ${ARIA2_CONF_DIR}/rclone-filter-file.txt"
+    fi
+
+    if [[ "${RCLONE_IGNORE_CASE}" = "true" ]]; then
+        RCLONE_IGNORE_CASE_OPTION="--ignore-case"
+    fi
+
     while [ ${RETRY} -le ${RETRY_NUM} ]; do
         [ ${RETRY} != 0 ] && (
             echo
             echo -e "$(DATE_TIME) ${ERROR} Upload failed! Retry ${RETRY}/${RETRY_NUM} ..."
             echo
         )
-        rclone move -v "${LOCAL_PATH}" "${REMOTE_PATH}"
+        
+        echo "rclone move -v \"${LOCAL_PATH}\" \"${REMOTE_PATH}\" ${RCLONE_IGNORE_CASE_OPTION} ${RCLONE_FILTER_FILE_OPTION} ${RCLONE_MIN_SIZE_OPTION} ${RCLONE_MAX_SIZE_OPTION}"
+
+        rclone move -v "${LOCAL_PATH}" "${REMOTE_PATH}" ${RCLONE_IGNORE_CASE_OPTION} ${RCLONE_FILTER_FILE_OPTION} ${RCLONE_MIN_SIZE_OPTION} ${RCLONE_MAX_SIZE_OPTION}
+        
         RCLONE_EXIT_CODE=$?
         if [ ${RCLONE_EXIT_CODE} -eq 0 ]; then
             UPLOAD_LOG="$(DATE_TIME) ${INFO} Upload done: ${LOCAL_PATH} -> ${REMOTE_PATH}"

@@ -101,7 +101,7 @@ CHECK_RCLONE() {
 
 DEFINITION_PATH() {
     LOCAL_PATH="${TASK_PATH}"
-    if [[ -f "${TASK_PATH}" ]] && [ ${BITTORRENT_MODE} = null ]; then
+    if [[ -f "${TASK_PATH}" ]] && [[ -n ${BITTORRENT_MODE} ]]; then
         REMOTE_PATH="${DRIVE_NAME}:${DRIVE_DIR}${DEST_PATH_SUFFIX%/*}"
     else
         REMOTE_PATH="${DRIVE_NAME}:${DRIVE_DIR}${DEST_PATH_SUFFIX}"
@@ -146,6 +146,17 @@ UPLOAD_FILE() {
     RCLONE_MAX_SIZE_OPTION=""
     RCLONE_FILTER_FILE_OPTION=""
     RCLONE_IGNORE_CASE_OPTION=""
+
+    if [[ -n ${BITTORRENT_MODE} ]]; then
+        LOCAL_FILE_EXTENSION=${LOCAL_PATH##*.}
+        if [[ "${LOCAL_FILE_EXTENSION,,}" = "torrent" ]]; then
+            echo -e "$(DATE_TIME) ${INFO} http 下载的 torrent 文件不上传并删除"
+            rm -vf ${LOCAL_PATH}
+            REMOVE_TASK
+            GET_REMOVE_TASK_INFO
+            exit 0
+        fi
+    fi
 
     if [[ -n ${RCLONE_MIN_SIZE} ]]; then
         RCLONE_MIN_SIZE_OPTION=${RCLONE_MIN_SIZE}
@@ -275,13 +286,12 @@ CLEAN_UP_ARIA2_DOWNLOAD_DIR
 GET_STOPPED_LIST
 GET_UPLOAD_TASK_INFO
 CHECK_SCRIPT_CONF
-CHECK_RCLONE "$@"
+#CHECK_RCLONE "$@"
 GET_TASK_INFO
 GET_BITTORRENT_MODE
 GET_DOWNLOAD_DIR
 CONVERSION_PATH
 DEFINITION_PATH
-CLEAN_UP
 LOAD_RCLONE_ENV
 UPLOAD_FILE
 

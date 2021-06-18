@@ -141,13 +141,13 @@ UPLOAD_FILE() {
     TASK_INFO
     RETRY=0
     RETRY_NUM=3
+    GENERATE_MEDIAINFO_FILE
     while [ ${RETRY} -le ${RETRY_NUM} ]; do
         [ ${RETRY} != 0 ] && (
             echo
             echo -e "$(DATE_TIME) ${ERROR} Upload failed! Retry ${RETRY}/${RETRY_NUM} ..."
             echo
         )
-        GENERATE_MEDIAINFO_FILE
         rclone move -v "${LOCAL_PATH}" "${REMOTE_PATH}"
         RCLONE_EXIT_CODE=$?
         if [ ${RCLONE_EXIT_CODE} -eq 0 ]; then

@@ -156,7 +156,7 @@ UPLOAD_FILE() {
             DELETE_EMPTY_DIR
             REMOVE_TASK
             GET_REMOVE_TASK_INFO
-            TELEGRAM_NOTIFICATION
+            TELEGRAM_NOTIFICATION "成功"
             break
         else
             RETRY=$((${RETRY} + 1))
@@ -164,6 +164,7 @@ UPLOAD_FILE() {
                 echo
                 UPLOAD_LOG="$(DATE_TIME) ${ERROR} Upload failed: ${LOCAL_PATH}"
                 OUTPUT_UPLOAD_LOG
+                TELEGRAM_NOTIFICATION "失败"
             )
             sleep 3
         fi
@@ -173,12 +174,13 @@ UPLOAD_FILE() {
 
 TELEGRAM_NOTIFICATION() {
     if [[ "${TG_BOT_TOKEN}" && "${TG_USER_ID}" ]]; then
+        upload_status=${1}
         NOTIFICATION_RESULT=`curl -X POST -s \
             -H 'Content-Type: application/json' \
             -d "{
                     \"chat_id\": \"${TG_USER_ID}\",
                     \"parse_mode\": \"HTML\",
-                    \"text\": \"<b>Task File Name</b>: <code>${TASK_FILE_NAME}</code>\n\n<b>Remote Path</b>: <code>${REMOTE_PATH}</code>\n\n<b>Completion Date</b>: $(DATE_TIME)\",
+                    \"text\": \"<b>名称</b>: <code>${TASK_FILE_NAME}</code>\n\n<b>路径</b>: <code>${REMOTE_PATH}</code>\n\n<b>状态</b>: ${upload_status}\n\n<b>日期</b>: $(DATE_TIME)\",
                     \"disable_web_page_preview\": true,
                     \"disable_notification\": true
                 }" \

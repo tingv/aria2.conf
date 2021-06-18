@@ -73,6 +73,10 @@ LOAD_SCRIPT_CONF() {
     TG_BOT_TOKEN="$(grep ^tg-bot-token "${SCRIPT_CONF}" | cut -d= -f2-)"
     TG_USER_ID="$(grep ^tg-user-id "${SCRIPT_CONF}" | cut -d= -f2-)"
     MEDIAINFO_FILE="$(grep ^mediainfo-file "${SCRIPT_CONF}" | cut -d= -f2-)"
+    RCLONE_MIN_SIZE="$(grep ^rclone-min-size "${SCRIPT_CONF}" | cut -d= -f2-)"
+    RCLONE_MAX_SIZE="$(grep ^rclone-max-size "${SCRIPT_CONF}" | cut -d= -f2-)"
+    RCLONE_FILTER_FILE="$(grep ^rclone-filter-file "${SCRIPT_CONF}" | cut -d= -f2-)"
+    RCLONE_IGNORE_CASE="$(grep ^rclone-ignore-case "${SCRIPT_CONF}" | cut -d= -f2-)"
 }
 
 READ_ARIA2_CONF() {

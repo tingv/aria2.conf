@@ -161,10 +161,34 @@ UPLOAD_FILE() {
         else
             RETRY=$((${RETRY} + 1))
             [ ${RETRY} -gt ${RETRY_NUM} ] && (
+                case $RCLONE_EXIT_CODE in
+                    1)  RCLONE_EXIT_MSG='Syntax or usage error'
+                    ;;
+                    2)  RCLONE_EXIT_MSG='Error not otherwise categorised'
+                    ;;
+                    3)  RCLONE_EXIT_MSG='Directory not found'
+                    ;;
+                    4)  RCLONE_EXIT_MSG='File not found'
+                    ;;
+                    5)  RCLONE_EXIT_MSG='Temporary error (one that more retries might fix) (Retry errors)'
+                    ;;
+                    6)  RCLONE_EXIT_MSG='Less serious errors (like 461 errors from dropbox) (NoRetry errors)'
+                    ;;
+                    7)  RCLONE_EXIT_MSG="Fatal error (one that more retries won't fix, like account suspended) (Fatal errors)"
+                    ;;
+                    8)  RCLONE_EXIT_MSG='Transfer exceeded - limit set by --max-transfer reached'
+                    ;;
+                    9)  RCLONE_EXIT_MSG='Operation successful, but no files transferred'
+                    ;;
+                    *)  RCLONE_EXIT_MSG='Unknown error'
+                    ;;
+                esac
                 echo
                 UPLOAD_LOG="$(DATE_TIME) ${ERROR} Upload failed: ${LOCAL_PATH}"
                 OUTPUT_UPLOAD_LOG
-                TELEGRAM_NOTIFICATION "失败"
+                REMOVE_TASK
+                GET_REMOVE_TASK_INFO
+                TELEGRAM_NOTIFICATION "失败 ( <code>${RCLONE_EXIT_MSG}</code> ) ，Aria2 任务已移除"
             )
             sleep 3
         fi

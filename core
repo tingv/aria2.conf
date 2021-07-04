@@ -70,6 +70,8 @@ LOAD_SCRIPT_CONF() {
     MIN_SIZE="$(grep ^min-size "${SCRIPT_CONF}" | cut -d= -f2-)"
     INCLUDE_FILE="$(grep ^include-file "${SCRIPT_CONF}" | cut -d= -f2-)"
     EXCLUDE_FILE="$(grep ^exclude-file "${SCRIPT_CONF}" | cut -d= -f2-)"
+    INCLUDE_FILE_REGEX="$(grep ^include-file-regex "${SCRIPT_CONF}" | cut -d= -f2-)"
+    EXCLUDE_FILE_REGEX="$(grep ^exclude-file-regex "${SCRIPT_CONF}" | cut -d= -f2-)"
     TG_BOT_TOKEN="$(grep ^tg-bot-token "${SCRIPT_CONF}" | cut -d= -f2-)"
     TG_USER_ID="$(grep ^tg-user-id "${SCRIPT_CONF}" | cut -d= -f2-)"
     MEDIAINFO_FILE="$(grep ^mediainfo-file "${SCRIPT_CONF}" | cut -d= -f2-)"
@@ -155,10 +157,10 @@ GET_INFO_HASH() {
 }
 
 CONVERSION_PATH() {
-    RELATIVE_PATH="${FILE_PATH#${DOWNLOAD_DIR}/}"
+    RELATIVE_PATH="${FILE_PATH#"${DOWNLOAD_DIR}/"}"
     TASK_FILE_NAME="${RELATIVE_PATH%%/*}"
     TASK_PATH="${DOWNLOAD_DIR}/${TASK_FILE_NAME}"
-    DEST_PATH_SUFFIX="${TASK_PATH#${ARIA2_DOWNLOAD_DIR}}"
+    DEST_PATH_SUFFIX="${TASK_PATH#"${ARIA2_DOWNLOAD_DIR}"}"
 }
 
 OUTPUT_LOG() {
@@ -231,11 +233,13 @@ DELETE_EMPTY_DIR() {
 }
 
 DELETE_EXCLUDE_FILE() {
-    if [[ ${FILE_NUM} -gt 1 ]] && [[ -n ${MIN_SIZE} || -n ${INCLUDE_FILE} || -n ${EXCLUDE_FILE} ]]; then
+    if [[ ${FILE_NUM} -gt 1 ]] && [[ -n ${MIN_SIZE} || -n ${INCLUDE_FILE} || -n ${EXCLUDE_FILE} ]] || -n ${EXCLUDE_FILE_REGEX} ]] || -n ${INCLUDE_FILE_REGEX} ]]; then
         echo -e "${INFO} Deleting excluded files ..."
         [[ -n ${MIN_SIZE} ]] && find "${TASK_PATH}" -type f -size -${MIN_SIZE} -print0 | xargs -0 rm -vf
         [[ -n ${EXCLUDE_FILE} ]] && find "${TASK_PATH}" -type f -regextype posix-extended -iregex ".*\.(${EXCLUDE_FILE})" -print0 | xargs -0 rm -vf
         [[ -n ${INCLUDE_FILE} ]] && find "${TASK_PATH}" -type f -regextype posix-extended ! -iregex ".*\.(${INCLUDE_FILE})" -print0 | xargs -0 rm -vf
+        [[ -n ${EXCLUDE_FILE_REGEX} ]] && find "${TASK_PATH}" -type f -regextype posix-extended -iregex "${EXCLUDE_FILE_REGEX}" -print0 | xargs -0 rm -vf
+        [[ -n ${INCLUDE_FILE_REGEX} ]] && find "${TASK_PATH}" -type f -regextype posix-extended ! -iregex "${INCLUDE_FILE_REGEX}" -print0 | xargs -0 rm -vf
     fi
 }
 

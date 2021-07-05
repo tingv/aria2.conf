@@ -224,7 +224,7 @@ UPLOAD_FILE() {
                 OUTPUT_UPLOAD_LOG
                 REMOVE_TASK
                 GET_REMOVE_TASK_INFO
-                TELEGRAM_NOTIFICATION "失败 ( <code>${RCLONE_EXIT_MSG}</code> ) ，Aria2 任务已移除"
+                TELEGRAM_NOTIFICATION "#失败 ( <code>${RCLONE_EXIT_MSG}</code> ) ，Aria2 任务已移除"
             )
             sleep 3
         fi

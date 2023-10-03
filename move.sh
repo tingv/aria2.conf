@@ -76,11 +76,41 @@ MOVE_FILE() {
     MOVE_EXIT_CODE=$?
     if [ ${MOVE_EXIT_CODE} -eq 0 ]; then
         MOVE_LOG="$(DATE_TIME) ${INFO} Move done: ${SOURCE_PATH} -> ${DEST_PATH}"
+        TELEGRAM_NOTIFICATION "成功"
     else
         MOVE_LOG="$(DATE_TIME) ${ERROR} Move failed: ${SOURCE_PATH}"
+        TELEGRAM_NOTIFICATION "#失败 ( <code>${SOURCE_PATH}</code> -> <code>${DEST_PATH}</code> )"
     fi
     OUTPUT_MOVE_LOG
     DELETE_EMPTY_DIR
+    REMOVE_TASK
+    GET_REMOVE_TASK_INFO
+}
+
+TELEGRAM_NOTIFICATION() {
+    if [[ "${TG_BOT_TOKEN}" && "${TG_USER_ID}" ]]; then
+        upload_status=${1}
+        NOTIFICATION_RESULT=`curl -X POST -s \
+            -H 'Content-Type: application/json' \
+            -d "{
+                    \"chat_id\": \"${TG_USER_ID}\",
+                    \"parse_mode\": \"HTML\",
+                    \"text\": \"<b>名称</b>: <code>${TASK_FILE_NAME}</code>\n\n<b>路径</b>: <code>${DEST_PATH}</code>\n\n<b>状态</b>: ${upload_status}\n\n<b>日期</b>: $(DATE_TIME)\",
+                    \"disable_web_page_preview\": true,
+                    \"disable_notification\": true
+                }" \
+            "https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage"`
+            NOTIFICATION_STATE=$(echo "${NOTIFICATION_RESULT}" | jq -r ".ok")
+            if [[ "${NOTIFICATION_STATE}" = "true" ]]; then
+                echo -e "$(DATE_TIME) ${INFO} Telegram message sent successfully."
+            elif [[ "${NOTIFICATION_STATE}" = "false" ]]; then
+                NOTIFICATION_ERROR_MSG=$(echo "${NOTIFICATION_RESULT}" | jq -r ".description")
+                NOTIFICATION_ERROR_CODE=$(echo "${NOTIFICATION_RESULT}" | jq -r ".error_code")
+                echo -e "$(DATE_TIME) ${ERROR} Telegram message sending failed. ${NOTIFICATION_ERROR_CODE}# ${NOTIFICATION_ERROR_MSG}"
+            else
+               echo -e "$(DATE_TIME) ${ERROR} Telegram message sending failed. Please check your network."
+            fi
+    fi
 }
 
 CHECK_CORE_FILE "$@"
